@@ -3,6 +3,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from operations import CashierAppOperations
+from products import listOfProducts
+
 
 
 class CashierApp:
@@ -80,3 +82,119 @@ class CashierApp:
 
         self.windowShoppingApp.mainloop()
         
+    def addItemToShoppingCart(self):
+        # Agregar productos al carrito de compras }}}
+        id = self.items.selection()[0]
+        price = float(listOfProducts[int(id)]['price'])
+        
+        print(f"ID: {id}")
+        print(f"Item: {self.selectedProductLabel['text']}")
+        print(f"Cantidad: {self.amountToBuy.get()}")
+        print(f"precio: {price}")
+
+    def viewShoppingCart(self):
+        # Ver los productos en el carrito
+        print(CashierApp.shoppingCart)
+        self.viewShoppingCartWindow = tkinter.Tk()
+        self.viewShoppingCartWindow.title("Shopping Cart Info")
+
+        # This will be the size of the Window
+        window_width = 500
+        window_height = 400
+
+        # This gets the screen information
+        screen_width = self.windowShoppingApp.winfo_screenwidth()
+        screen_height = self.windowShoppingApp.winfo_screenheight()
+
+        # This specifies the position of the window
+        window_post_x = int((screen_width - window_width)/2)
+        window_post_y = int((screen_height - window_height)/2) 
+
+        # Specify position and size of the window
+        self.viewShoppingCartWindow.geometry(f"{window_width}x{window_height}+{window_post_x}+{window_post_y}")
+
+        self.itemsShoppingCart = ttk.Treeview(self.viewShoppingCartWindow, columns=("Name", "Amount", "Total_Price"), show="headings")
+        # It is necessary to add the name of each column
+        self.itemsShoppingCart.heading("Name", text="Name")
+        self.itemsShoppingCart.heading("Amount", text="Amount")
+        self.itemsShoppingCart.heading("Total_Price", text="Total Price")
+        #self.items.pack(pady=10, fill="both",expand=True)
+        self.itemsShoppingCart.pack()
+
+        for product in self.shoppingCart:
+            self.itemsShoppingCart.insert("","end",iid=product,values=(self.shoppingCart[product]["name"],self.shoppingCart[product]["totalItems"],f"$ {self.shoppingCart[product]["totalPrice"]:.2f}"))
+        
+        self.confirmPurchase = ttk.Button(self.viewShoppingCartWindow,text="Buy", command=self.buy)
+        self.confirmPurchase.pack()
+
+        self.cancelPurchase = ttk.Button(self.viewShoppingCartWindow,text="Cancel", command=self.cancelPurchase)
+        self.cancelPurchase.pack()
+
+        self.viewShoppingCartWindow.mainloop()
+        ...
+
+    def buy(self):
+        # Realizar la compra y actualizar el historial de ventas y el stock }}}
+        print("Buying")
+        
+        print("History has to be updated")
+        print("\nStock has to be updated (processing)")
+        
+        print(f"Receipt: {CashierApp.shoppingCart[itemInShoppingCart]["purchaseID"]} - ID: {CashierApp.shoppingCart[itemInShoppingCart]["productID"]} - {CashierApp.shoppingCart[itemInShoppingCart]["name"]} - {CashierApp.shoppingCart[itemInShoppingCart]["unitPrice"]} - {CashierApp.shoppingCart[itemInShoppingCart]["totalItems"]} - {CashierApp.shoppingCart[itemInShoppingCart]["totalPrice"]}")
+        print(f"Current stock: {listOfProducts[int(productID)]["stock"]}")
+        print(f"Total items to buy: {totalItems}")
+        currentStock = self.items.item(productID)['values'][2] # <--- CurrentStock
+        self.items.item(productID, values=(name,f"$ {unitPrice:.2f}",currentStock-totalItems))    
+
+    def cancelPurchase(self):
+        # Cancelar la compra y limpiar el carrito }}}}
+        print("Canceling")
+        print("clean shopping cart")
+        self.viewShoppingCartButton['text'] = "View shopping cart"
+        self.viewShoppingCartWindow.destroy()
+        print(f"New shopping cart (It should be empty): {CashierApp.shoppingCart}")
+
+    def displaySalesHistory(self):
+        # Mostrar el historial de ventas
+        salesHistoryStrings = []
+        salesHistoryStrings.append("----------------------")
+        salesHistoryStrings.append("Receipt ID - Product - Unit Price - Total Items - Total Price")
+        for itemInSaleHistory in CashierApp.salesHistory:
+            productID = CashierApp.salesHistory[itemInSaleHistory]["productID"]
+            purchaseID = CashierApp.salesHistory[itemInSaleHistory]["purchaseID"]
+            name = CashierApp.salesHistory[itemInSaleHistory]["name"]
+            unitPrice = CashierApp.salesHistory[itemInSaleHistory]["unitPrice"]
+            totalItems = CashierApp.salesHistory[itemInSaleHistory]["totalItems"]
+            totalPrice = CashierApp.salesHistory[itemInSaleHistory]["totalPrice"]
+            salesHistoryStrings.append(f"\n{purchaseID} - {name} - {unitPrice} - {totalItems} - {totalPrice}")
+        salesHistoryStrings.append("\n----------------------")
+        
+        self.viewSalesHistoryWindow = tkinter.Tk()
+        self.viewSalesHistoryWindow.title("Sales History Information")
+
+        # This will be the size of the Window
+        window_width = 500
+        window_height = 400
+
+        # This gets the screen information
+        screen_width = self.windowShoppingApp.winfo_screenwidth()
+        screen_height = self.windowShoppingApp.winfo_screenheight()
+
+        # This specifies the position of the window
+        window_post_x = int((screen_width - window_width)/2)
+        window_post_y = int((screen_height - window_height)/2) 
+
+        # Specify position and size of the window
+        self.viewSalesHistoryWindow.geometry(f"{window_width}x{window_height}+{window_post_x}+{window_post_y}")
+
+        self.salesHistoryText = tkinter.Label(self.viewSalesHistoryWindow, text=salesHistoryStrings)
+        self.salesHistoryText.pack()
+
+        self.okSalesButton = ttk.Button(self.viewSalesHistoryWindow,text="Ok", command=self.viewSalesHistoryWindow.destroy)
+        self.okSalesButton.pack()
+
+        self.viewSalesHistoryWindow.mainloop()
+
+# Creación de la aplicación
+myApp = CashierApp()
+myApp.createShoppingWindow(listOfProducts)        
