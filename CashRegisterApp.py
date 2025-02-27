@@ -133,19 +133,7 @@ class CashierApp:
         self.viewShoppingCartWindow.mainloop()
         ...
 
-    def buy(self):
-        # Realizar la compra y actualizar el historial de ventas y el stock }}}
-        print("Buying")
-        
-        print("History has to be updated")
-        print("\nStock has to be updated (processing)")
-        
-        print(f"Receipt: {CashierApp.shoppingCart[itemInShoppingCart]["purchaseID"]} - ID: {CashierApp.shoppingCart[itemInShoppingCart]["productID"]} - {CashierApp.shoppingCart[itemInShoppingCart]["name"]} - {CashierApp.shoppingCart[itemInShoppingCart]["unitPrice"]} - {CashierApp.shoppingCart[itemInShoppingCart]["totalItems"]} - {CashierApp.shoppingCart[itemInShoppingCart]["totalPrice"]}")
-        print(f"Current stock: {listOfProducts[int(productID)]["stock"]}")
-        print(f"Total items to buy: {totalItems}")
-        currentStock = self.items.item(productID)['values'][2] # <--- CurrentStock
-        self.items.item(productID, values=(name,f"$ {unitPrice:.2f}",currentStock-totalItems))    
-
+    
     def cancelPurchase(self):
         # Cancelar la compra y limpiar el carrito }}}}
         print("Canceling")
