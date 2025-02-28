@@ -1,3 +1,5 @@
+
+# Dictionary that contains the database
 listOfProducts = {
     1: {"productID": 1,"name": "Apple", "price": 1.5, "stock": 100},
     2: {"productID": 2,"name": "Green banana", "price": 1.0, "stock": 150},

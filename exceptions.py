@@ -1,3 +1,3 @@
-def manejar_error(exception): 
-    """Gestiona los errores de la aplicacion."""
-    print(f"Error: {exception}")
+def InvalidNumberInput(exception):
+    """It handles errors in the application"""
+    #print(f"Error: {exception}")

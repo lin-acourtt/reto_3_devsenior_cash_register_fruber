@@ -1,188 +1,240 @@
-# cashRegisterApp.py
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
-from operations import CashierAppOperations
-from products import listOfProducts
+from operations import centerWindow, updateSelectedProductLabel
 
+### Obtain product ID from selecction on TreeViewList
+# treeViewList.selection()[0]
 
+### Obtain values from TreeViewList
+# treeViewList.item(id)['values'][0] --> Name
+# treeViewList.item(id)['values'][1] --> Price
+# treeViewList.item(id)['values'][2] --> Stock
 
-class CashierApp:
-
+class CashRegisterApp():
     # Used to identify which items were part of the same purchase
-    purchaseCounter = 1
+    purchaseID = 1 #purchaseCounter
+    
     # Used to store the history of all sells
     salesHistory = {} # Structure will be: {purchaseID: ID, productId: id, name: ProductName, unitPrice: UnitPrice, totalItems: TotalItems, totalPrice: TotalPrice }
+    
     # Used to store items added to the shopping card
-    shoppingCart = {} # Structure will be: {purchaseID: ID, name: ProductName, TotalItems, totalPrice: TotalPrice } 
+    shoppingCart = {} # Structure will be: {purchaseID: ID, productId: id, name: ProductName, unitPrice: UnitPrice, totalItems: TotalItems, totalPrice: TotalPrice }
 
+    def openCashRegisterMainWindow(self,listOfProducts): 
+        # Opening the app's main window
 
-    def createShoppingWindow(self,listOfProducts):
         # Create Window
-        self.windowShoppingApp = tkinter.Tk()
+        self.cashRegisterAppMainWindow = tkinter.Tk()
         # Set parameters
-        self.windowShoppingApp.title("Shopping")
+        self.cashRegisterAppMainWindow.title("Shopping")
 
         # This will be the size of the Window
         window_width = 600
         window_height = 600
 
-        # This gets the screen information
-        screen_width = self.windowShoppingApp.winfo_screenwidth()
-        screen_height = self.windowShoppingApp.winfo_screenheight()
+        centerWindow(self.cashRegisterAppMainWindow,window_width,window_height)
 
-        # This specifies the position of the window
-        window_post_x = int((screen_width - window_width)/2)
-        window_post_y = int((screen_height - window_height)/2) 
+        self.labelSelectProductTitle = ttk.Label(self.cashRegisterAppMainWindow,text="Please select a product to shop: ")
+        self.labelSelectProductTitle.pack()
 
-        # Specify position and size of the window
-        self.windowShoppingApp.geometry(f"{window_width}x{window_height}+{window_post_x}+{window_post_y}")
-
-        # Optional
-        self.label1 = ttk.Label(self.windowShoppingApp,text="Select a product: ")
-        self.label1.pack()
-
-        # Adding the table to display the products
-        # Doing this will create an empty heading
-        self.items = ttk.Treeview(self.windowShoppingApp, columns=("Name", "Price", "Stock"), show="headings")
+        # Adding the TreeView to display the products
+        # Doing only this, will create an empty heading
+        self.listOfItems = ttk.Treeview(self.cashRegisterAppMainWindow, columns=("Name", "Price", "Stock"), show="headings")
         # It is necessary to add the name of each column
-        self.items.heading("Name", text="Name")
-        self.items.heading("Price", text="Price")
-        self.items.heading("Stock", text="Stock")
-        #self.items.pack(pady=10, fill="both",expand=True)
-        self.items.pack()
+        self.listOfItems.heading("Name", text="Name")
+        self.listOfItems.heading("Price", text="Price")
+        self.listOfItems.heading("Stock", text="Stock")
+        self.listOfItems.pack()
 
-
+        # Now the Treeview object will be filled with the products information
         for prodID in listOfProducts:
-            self.items.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
+            self.listOfItems.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
         
         # Label to display the product that will be added to the cart
-        self.selectedProductLabel = ttk.Label(self.windowShoppingApp,text="Selected item")
-        self.selectedProductLabel.pack()
-        
-        def updateSelectedProductLabel(event):            
-            id = self.items.selection()[0]
-            self.selectedProductLabel.configure(text=listOfProducts[int(id)]['name'])
+        self.labelSelectedProduct = ttk.Label(self.cashRegisterAppMainWindow,text="Selected item")
+        self.labelSelectedProduct.pack()
 
         # On button release, the label of selectedProductLabel will be updated with the selected product
-        self.items.bind("<ButtonRelease-1>", updateSelectedProductLabel)
+        self.listOfItems.bind("<ButtonRelease-1>", lambda event:updateSelectedProductLabel(event,self.listOfItems, self.labelSelectedProduct))
 
-        self.amountToBuy = ttk.Entry(self.windowShoppingApp,text="0")
-        self.amountToBuy.pack()
+        # Entry to specify the amount of items to be added to the shopping cart
+        self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow,text="0")
+        self.entryAmountToBuy.pack()
 
         # Button to add product to shopping cart 
-        self.addButton = ttk.Button(self.windowShoppingApp,text="Add item to shopping cart",command=self.addItemToShoppingCart)
-        self.addButton.pack()
+        self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",command=self.addItemToShoppingCart)
+        self.buttonAddProduct.pack()
 
-        self.viewShoppingCartButton = ttk.Button(self.windowShoppingApp,text="View shopping cart",command=self.viewShoppingCart)
-        self.viewShoppingCartButton.pack()
+        self.buttonViewShoppingCart = ttk.Button(self.cashRegisterAppMainWindow,text="View shopping cart",command=self.openShoppingCartWindow)
+        self.buttonViewShoppingCart.pack()
 
-        self.vieSalesHistoryButton = ttk.Button(self.windowShoppingApp,text="View sales history",command=self.displaySalesHistory)
-        self.vieSalesHistoryButton.pack()
-
-        self.windowShoppingApp.mainloop()
+        self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow)
+        self.buttonViewSalesHistory.pack()
         
+        self.cashRegisterAppMainWindow.mainloop()
+
     def addItemToShoppingCart(self):
-        # Agregar productos al carrito de compras }}}
-        id = self.items.selection()[0]
-        price = float(listOfProducts[int(id)]['price'])
-        
-        print(f"ID: {id}")
-        print(f"Item: {self.selectedProductLabel['text']}")
-        print(f"Cantidad: {self.amountToBuy.get()}")
-        print(f"precio: {price}")
+        # The class variable "shoppingCart" will be updated with this method
 
-    def viewShoppingCart(self):
-        # Ver los productos en el carrito
-        print(CashierApp.shoppingCart)
-        self.viewShoppingCartWindow = tkinter.Tk()
-        self.viewShoppingCartWindow.title("Shopping Cart Info")
+        # Obtain the selected product's ID
+        id = self.listOfItems.selection()[0]
+
+        # Obtain product's name
+        name = self.listOfItems.item(id)['values'][0]
+
+        # Obtain product's price
+        priceStr = self.listOfItems.item(id)['values'][1]
+        price = float(priceStr[2:len(priceStr)])
+
+        # Obtain total items to buy
+        totalItems = int(self.entryAmountToBuy.get())
+
+        # Add item to the Shopping Cart
+        self.updateShoppingCart(id, name, price, totalItems)
+        
+        # Update View Shopping Cart button
+        self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
+
+    def openShoppingCartWindow(self):
+        # Open a new window with the shopping cart's contents
+
+        self.shoppingCartWindow = tkinter.Tk()
+        self.shoppingCartWindow.title("Shopping Cart Info")
 
         # This will be the size of the Window
         window_width = 500
         window_height = 400
 
-        # This gets the screen information
-        screen_width = self.windowShoppingApp.winfo_screenwidth()
-        screen_height = self.windowShoppingApp.winfo_screenheight()
+        centerWindow(self.shoppingCartWindow,window_width,window_height)
 
-        # This specifies the position of the window
-        window_post_x = int((screen_width - window_width)/2)
-        window_post_y = int((screen_height - window_height)/2) 
-
-        # Specify position and size of the window
-        self.viewShoppingCartWindow.geometry(f"{window_width}x{window_height}+{window_post_x}+{window_post_y}")
-
-        self.itemsShoppingCart = ttk.Treeview(self.viewShoppingCartWindow, columns=("Name", "Amount", "Total_Price"), show="headings")
+        self.listOfItemsShoppingCart = ttk.Treeview(self.shoppingCartWindow, columns=("Name", "Amount", "Total_Price"), show="headings")
         # It is necessary to add the name of each column
-        self.itemsShoppingCart.heading("Name", text="Name")
-        self.itemsShoppingCart.heading("Amount", text="Amount")
-        self.itemsShoppingCart.heading("Total_Price", text="Total Price")
-        #self.items.pack(pady=10, fill="both",expand=True)
-        self.itemsShoppingCart.pack()
-
-        for product in self.shoppingCart:
-            self.itemsShoppingCart.insert("","end",iid=product,values=(self.shoppingCart[product]["name"],self.shoppingCart[product]["totalItems"],f"$ {self.shoppingCart[product]["totalPrice"]:.2f}"))
+        self.listOfItemsShoppingCart.heading("Name", text="Name")
+        self.listOfItemsShoppingCart.heading("Amount", text="Amount")
+        self.listOfItemsShoppingCart.heading("Total_Price", text="Total Price")
         
-        self.confirmPurchase = ttk.Button(self.viewShoppingCartWindow,text="Buy", command=self.buy)
-        self.confirmPurchase.pack()
+        self.listOfItemsShoppingCart.pack()
 
-        self.cancelPurchase = ttk.Button(self.viewShoppingCartWindow,text="Cancel", command=self.cancelPurchase)
-        self.cancelPurchase.pack()
+        for product in CashRegisterApp.shoppingCart:
+            self.listOfItemsShoppingCart.insert("","end",iid=product,values=(CashRegisterApp.shoppingCart[product]["name"],CashRegisterApp.shoppingCart[product]["totalItems"],f"$ {CashRegisterApp.shoppingCart[product]["totalPrice"]:.2f}"))
+        
+        self.buttonConfirmPurchase = ttk.Button(self.shoppingCartWindow,text="Buy", command=self.buy)
+        self.buttonConfirmPurchase.pack()
 
-        self.viewShoppingCartWindow.mainloop()
-        ...
+        self.buttonCancelPurchase = ttk.Button(self.shoppingCartWindow,text="Cancel", command=self.cancelPurchase)
+        self.buttonCancelPurchase.pack()
 
-    
+        self.shoppingCartWindow.mainloop()
+
+    def buy(self):
+        
+        # Sales history has to be updated
+        for itemInShoppingCart in CashRegisterApp.shoppingCart:
+            productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromShoppingCart(itemInShoppingCart)
+            self.updateSalesHistory(productID, purchaseID, name, unitPrice, totalItems, totalPrice)
+            
+            # Stock has to be updated in the table
+            currentStock = self.listOfItems.item(productID)['values'][2] # <--- CurrentStock
+            self.listOfItems.item(productID, values=(name,f"$ {unitPrice:.2f}",currentStock-totalItems))
+
+        # Purchase ID has to be updated    
+        CashRegisterApp.purchaseID += 1
+        
+        # Shopping cart has to be cleaned.
+        CashRegisterApp.shoppingCart = {}
+        
+        # View Shopping cart button has to be updated
+        self.buttonViewShoppingCart['text'] = "View shopping cart"
+        
+        # Shopping cart window has to be closed
+        self.shoppingCartWindow.destroy()
+        messagebox.showinfo("Purchase complete", f"Purchase with Receipt ID {purchaseID} completed. Please check the sales history for details.")
+
+        # Pending: show receipt details
+
+
     def cancelPurchase(self):
-        # Cancelar la compra y limpiar el carrito }}}}
-        print("Canceling")
-        print("clean shopping cart")
-        self.viewShoppingCartButton['text'] = "View shopping cart"
-        self.viewShoppingCartWindow.destroy()
-        print(f"New shopping cart (It should be empty): {CashierApp.shoppingCart}")
+        
+        # Shopping cart has to be cleaned.
+        CashRegisterApp.shoppingCart = {}
 
-    def displaySalesHistory(self):
-        # Mostrar el historial de ventas
+        # View Shopping cart button has to be updated
+        self.buttonViewShoppingCart['text'] = "View shopping cart"
+        
+        # Shopping cart window has to be closed
+        self.shoppingCartWindow.destroy()
+
+        messagebox.showinfo("Purchase cancelled", f"Purchase has been aborted. Items from shopping card were removed.")
+        
+        
+    def openSalesHistoryWindow(self):
+
+        # Pending, create separate funcion for this
         salesHistoryStrings = []
         salesHistoryStrings.append("----------------------")
         salesHistoryStrings.append("Receipt ID - Product - Unit Price - Total Items - Total Price")
-        for itemInSaleHistory in CashierApp.salesHistory:
-            productID = CashierApp.salesHistory[itemInSaleHistory]["productID"]
-            purchaseID = CashierApp.salesHistory[itemInSaleHistory]["purchaseID"]
-            name = CashierApp.salesHistory[itemInSaleHistory]["name"]
-            unitPrice = CashierApp.salesHistory[itemInSaleHistory]["unitPrice"]
-            totalItems = CashierApp.salesHistory[itemInSaleHistory]["totalItems"]
-            totalPrice = CashierApp.salesHistory[itemInSaleHistory]["totalPrice"]
+        for itemInSaleHistory in CashRegisterApp.salesHistory:
+            productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromSalesHistory(itemInSaleHistory)
             salesHistoryStrings.append(f"\n{purchaseID} - {name} - {unitPrice} - {totalItems} - {totalPrice}")
         salesHistoryStrings.append("\n----------------------")
         
-        self.viewSalesHistoryWindow = tkinter.Tk()
-        self.viewSalesHistoryWindow.title("Sales History Information")
+        self.salesHistoryWindow = tkinter.Tk()
+        self.salesHistoryWindow.title("Sales History Information")
 
         # This will be the size of the Window
         window_width = 500
         window_height = 400
 
-        # This gets the screen information
-        screen_width = self.windowShoppingApp.winfo_screenwidth()
-        screen_height = self.windowShoppingApp.winfo_screenheight()
+        centerWindow(self.salesHistoryWindow,window_width,window_height)
 
-        # This specifies the position of the window
-        window_post_x = int((screen_width - window_width)/2)
-        window_post_y = int((screen_height - window_height)/2) 
+        self.textSalesHistoryText = tkinter.Label(self.salesHistoryWindow, text=salesHistoryStrings)
+        self.textSalesHistoryText.pack()
 
-        # Specify position and size of the window
-        self.viewSalesHistoryWindow.geometry(f"{window_width}x{window_height}+{window_post_x}+{window_post_y}")
+        self.buttonOkSales = ttk.Button(self.salesHistoryWindow,text="Ok", command=self.salesHistoryWindow.destroy)
+        self.buttonOkSales.pack()
 
-        self.salesHistoryText = tkinter.Label(self.viewSalesHistoryWindow, text=salesHistoryStrings)
-        self.salesHistoryText.pack()
+        self.salesHistoryWindow.mainloop()
 
-        self.okSalesButton = ttk.Button(self.viewSalesHistoryWindow,text="Ok", command=self.viewSalesHistoryWindow.destroy)
-        self.okSalesButton.pack()
+    @classmethod
+    def obtainItemFromShoppingCart(cls, id):
+        productID = CashRegisterApp.shoppingCart[id]["productID"]
+        purchaseID = CashRegisterApp.shoppingCart[id]["purchaseID"]
+        name = CashRegisterApp.shoppingCart[id]["name"]
+        unitPrice = CashRegisterApp.shoppingCart[id]["unitPrice"]
+        totalItems = CashRegisterApp.shoppingCart[id]["totalItems"]
+        totalPrice = CashRegisterApp.shoppingCart[id]["totalPrice"]
+        return productID, purchaseID, name, unitPrice, totalItems, totalPrice
+    
+    @classmethod
+    def obtainItemFromSalesHistory(cls, id):
+        productID = CashRegisterApp.salesHistory[id]["productID"]
+        purchaseID = CashRegisterApp.salesHistory[id]["purchaseID"]
+        name = CashRegisterApp.salesHistory[id]["name"]
+        unitPrice = CashRegisterApp.salesHistory[id]["unitPrice"]
+        totalItems = CashRegisterApp.salesHistory[id]["totalItems"]
+        totalPrice = CashRegisterApp.salesHistory[id]["totalPrice"]
+        return productID, purchaseID, name, unitPrice, totalItems, totalPrice
 
-        self.viewSalesHistoryWindow.mainloop()
+    @classmethod
+    def updateShoppingCart(cls, id, name: str, price: float, totalItems: int):
+        # Method to add elements to the shopping cart
+        CashRegisterApp.shoppingCart.update({len(CashRegisterApp.shoppingCart)+1:{
+            "purchaseID": CashRegisterApp.purchaseID,
+            "productID": id,
+            "name": name,
+            "unitPrice": price,
+            "totalItems": totalItems,
+            "totalPrice": totalItems * price
+        }})
 
-# Creación de la aplicación
-myApp = CashierApp()
-myApp.createShoppingWindow(listOfProducts)        
+    @classmethod
+    def updateSalesHistory(cls, productID, purchaseID, name, unitPrice, totalItems, totalPrice):
+        CashRegisterApp.salesHistory.update({(len(CashRegisterApp.salesHistory)+1):{
+                 "purchaseID": purchaseID, 
+                 "productID": productID,
+                 "name": name, 
+                 "unitPrice": unitPrice, 
+                 "totalItems": totalItems, 
+                 "totalPrice": totalPrice 
+             }})

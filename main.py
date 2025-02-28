@@ -1,9 +1,7 @@
-from CashRegisterApp import CashierApp
+from CashRegisterApp import CashRegisterApp
 from products import listOfProducts
 
-def main():
-    myApp = CashierApp()
-    myApp.createShoppingWindow(listOfProducts)
-
 if __name__ == "__main__":
-    main()
+    myApp = CashRegisterApp()
+
+    myApp.openCashRegisterMainWindow(listOfProducts)
