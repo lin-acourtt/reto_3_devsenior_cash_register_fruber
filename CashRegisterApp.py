@@ -51,16 +51,47 @@ class CashRegisterApp():
         for prodID in listOfProducts:
             self.listOfItems.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
         
+  
+        
+        
         # Label to display the product that will be added to the cart
         self.labelSelectedProduct = ttk.Label(self.cashRegisterAppMainWindow,text="Selected item")
         self.labelSelectedProduct.pack()
+        
+        
+        
+        
 
         # On button release, the label of selectedProductLabel will be updated with the selected product
         self.listOfItems.bind("<ButtonRelease-1>", lambda event:updateSelectedProductLabel(event,self.listOfItems, self.labelSelectedProduct))
 
-        # Entry to specify the amount of items to be added to the shopping cart
-        self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow,text="0")
-        self.entryAmountToBuy.pack()
+
+        def is_valid_number(input_value):
+            # This function checks if the input is a valid number
+            if input_value == "":
+                return True  # Allow empty value (for the user to clear the field)
+            try:
+                float(input_value)  # Try to convert the input to a float
+                return True
+            except ValueError:
+                return False  # Return False if the input is not a valid number
+
+        # In your GUI setup:
+
+        # Create a tkinter variable to hold the input value
+        input_validation = tkinter.StringVar()
+
+        # Create a validation command that will call is_valid_number
+        vcmd = (self.cashRegisterAppMainWindow.register(is_valid_number), '%P')
+
+        # Create the Entry widget with validation
+        self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow, textvariable=input_validation, validate="key", validatecommand=vcmd)
+        self.entryAmountToBuy.pack()  
+
+
+        # # Entry to specify the amount of items to be added to the shopping cart
+        # self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow,text="0")
+        # self.entryAmountToBuy.pack()
 
         # Button to add product to shopping cart 
         self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",command=self.addItemToShoppingCart)
