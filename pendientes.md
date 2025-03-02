@@ -4,8 +4,6 @@
 
 * Por arreglar: Si el cliente pone un número mayor al que hay en stock, todavía puede agregar el producto al carrito.
 
-* Sí funciona: Si el número es menor a 0 o negativo tira error.
-
 * Por agregar: Al imprimir el recibo al comprar, arreglar el formato de los precios para que tengan "$" al comienzo.
 
 * Por arreglar: como dijiste, el total de la factura hay que corregirlo
@@ -23,3 +21,4 @@
 # Terminados
 
 * Por arreglar: Línea 351 de CashRegisterApp da erra cuando se cierra la aplicación por el botón exit
+* Sí funciona: Si el número es menor a 0 o negativo tira error.
