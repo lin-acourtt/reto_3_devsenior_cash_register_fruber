@@ -5,3 +5,5 @@ if __name__ == "__main__":
     myApp = CashRegisterApp()
 
     myApp.openCashRegisterMainWindow(listOfProducts)
+    
+    

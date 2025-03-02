@@ -1,3 +1,14 @@
-def InvalidNumberInput(exception):
+from tkinter import messagebox
+
+# def InvalidNumberInput(exception):
+#     """It handles errors in the application"""
+#     #print(f"Error: {exception}")
+    
+class InvalidNumberInput(Exception):
     """It handles errors in the application"""
-    #print(f"Error: {exception}")
+    pass    
+    
+def InvalidNumberInputHandler(exception):
+    """Handle the InvalidNumberInput exception."""
+    # print(f"Error: {exception}")    
+    messagebox.showerror("Error", str(exception))
