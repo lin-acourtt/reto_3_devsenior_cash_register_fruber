@@ -86,11 +86,19 @@ class CashRegisterApp():
 
         # Create a validation command that will call is_valid_number
         vcmd = (self.cashRegisterAppMainWindow.register(is_valid_number), '%P')
+        
+        frameEntry = ttk.Frame(self.cashRegisterAppMainWindow)
+        frameEntry.pack(pady=10)
+        
+        self.labelAmount = ttk.Label(frameEntry, text="amount: ")
+        self.labelAmount.grid(row=0, column=0, padx=5)
 
         # Create the Entry widget with validation
-        self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow, textvariable=input_validation, validate="key", validatecommand=vcmd)
-        self.entryAmountToBuy.pack()  
-
+        # self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow, textvariable=input_validation, validate="key", validatecommand=vcmd)
+        # self.entryAmountToBuy.pack(side="left")  
+        
+        self.entryAmountToBuy = ttk.Entry(frameEntry, textvariable=input_validation, validate="key", validatecommand=vcmd)
+        self.entryAmountToBuy.grid(row=0, column=1, padx=5)
 
         # # Entry to specify the amount of items to be added to the shopping cart
         # self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow,text="0")
