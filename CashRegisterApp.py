@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter.constants import DISABLED, NORMAL 
 from operations import centerWindow, updateSelectedProductLabel
 from exceptions import InvalidNumberInput, InvalidNumberInputHandler
 
@@ -21,6 +22,9 @@ class CashRegisterApp():
     # Used to store the history of all sells
     salesHistory = {} # Structure will be: {purchaseID: ID, productId: id, name: ProductName, unitPrice: UnitPrice, totalItems: TotalItems, totalPrice: TotalPrice }
     
+    # Used to store the total of each purschase
+    salesHistoryTotal = {} # Structure will be {purchaseID: ID, total: total}
+
     # Used to store items added to the shopping card
     shoppingCart = {} # Structure will be: {purchaseID: ID, productId: id, name: ProductName, unitPrice: UnitPrice, totalItems: TotalItems, totalPrice: TotalPrice }
 
@@ -99,10 +103,10 @@ class CashRegisterApp():
         self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",command=self.addItemToShoppingCart)
         self.buttonAddProduct.pack()
 
-        self.buttonViewShoppingCart = ttk.Button(self.cashRegisterAppMainWindow,text="View shopping cart",command=self.openShoppingCartWindow)
+        self.buttonViewShoppingCart = ttk.Button(self.cashRegisterAppMainWindow,text="View shopping cart",command=self.openShoppingCartWindow, state=DISABLED)
         self.buttonViewShoppingCart.pack()
 
-        self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow)
+        self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow, state=DISABLED)
         self.buttonViewSalesHistory.pack()
         
         # Botón para salir
@@ -123,6 +127,14 @@ class CashRegisterApp():
         # Obtain the selected product's ID
         id = self.listOfItems.selection()[0]
 
+        # Check if the same item is already in the shopping cart
+        try:
+            totalItems = CashRegisterApp.shoppingCart[id]['totalItems']
+            print(f"ver si da algo: {totalItems}")
+        except:
+            totalItems = 0
+            
+
         # Obtain product's name
         name = self.listOfItems.item(id)['values'][0]
 
@@ -131,7 +143,7 @@ class CashRegisterApp():
         price = float(priceStr[2:len(priceStr)])
 
         # Obtain total items to buy
-        totalItems = int(self.entryAmountToBuy.get())
+        totalItems = totalItems + int(self.entryAmountToBuy.get())
 
         if totalItems <= 0:
             messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
@@ -143,6 +155,10 @@ class CashRegisterApp():
         
         # Update View Shopping Cart button
         self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
+
+        # Change state of the button only if the state is disabled
+        if (self.buttonViewShoppingCart['state'].string == 'disabled'):
+            self.buttonViewShoppingCart['state'] = NORMAL
 
     def openShoppingCartWindow(self):
         # Open a new window with the shopping cart's contents
@@ -184,11 +200,22 @@ class CashRegisterApp():
             productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromShoppingCart(itemInShoppingCart)
             self.updateSalesHistory(productID, purchaseID, name, unitPrice, totalItems, totalPrice)
             
-            receipt_details.append(f"{name} - {unitPrice} x {totalItems} = {totalPrice:.2f}")
+            receipt_details.append(f"{name} - $ {unitPrice:.2f} x {totalItems} = $ {totalPrice:.2f}")
             
             # Stock has to be updated in the table
             currentStock = int(self.listOfItems.item(productID)['values'][2]) # <--- CurrentStock
             self.listOfItems.item(productID, values=(name,  f"$ {unitPrice:.2f}",currentStock-totalItems))
+
+        total = self.calculateTotalPrice()
+        receipt_message = "\n".join(receipt_details)
+        receipt_message += f"\n\nTotal Purchase: ${total:.2f}"
+        
+        # Update salesHistoryTotal
+        self.updateSalesHistoryTotal(purchaseID, total)
+
+        # Change state of View Sales History button
+        if (self.buttonViewSalesHistory['state'].string == 'disabled'):
+            self.buttonViewSalesHistory['state'] = NORMAL
 
         # Purchase ID has to be updated    
         CashRegisterApp.purchaseID += 1
@@ -198,15 +225,13 @@ class CashRegisterApp():
         
         # View Shopping cart button has to be updated
         self.buttonViewShoppingCart['text'] = "View shopping cart"
-        
+
+        # Change state of the button
+        self.buttonViewShoppingCart['state'] = DISABLED
+
         # Shopping cart window has to be closed
         self.shoppingCartWindow.destroy()
         # messagebox.showinfo("Purchase complete", f"Purchase with Receipt ID {purchaseID} completed. Please check the sales history for details.")
-
-        # Pending: show receipt details
-        
-        receipt_message = "\n".join(receipt_details)
-        receipt_message += f"\n\nTotal Purchase: ${self.calculateTotalPrice():.2f}"
     
         messagebox.showinfo("Purchase complete", f"Purchase with Receipt ID {CashRegisterApp.purchaseID - 1} completed.\n\n{receipt_message}")
 
@@ -215,7 +240,7 @@ class CashRegisterApp():
         total_price = 0.0
         for itemInShoppingCart in CashRegisterApp.shoppingCart:
             item = CashRegisterApp.shoppingCart[itemInShoppingCart]
-            print(f"Item: {item['name']}, Price: {item['unitPrice']}, Quantity: {item['totalItems']}, Total: {item['totalPrice']}")
+            #print(f"Item: {item['name']}, Price: {item['unitPrice']}, Quantity: {item['totalItems']}, Total: {item['totalPrice']}")
             total_price += item["totalPrice"]
             
             # total_price += CashRegisterApp.shoppingCart[itemInShoppingCart]["totalPrice"]
@@ -228,6 +253,9 @@ class CashRegisterApp():
 
         # View Shopping cart button has to be updated
         self.buttonViewShoppingCart['text'] = "View shopping cart"
+
+        # Change state of the button
+        self.buttonViewShoppingCart['state'] = DISABLED
         
         # Shopping cart window has to be closed
         self.shoppingCartWindow.destroy()
@@ -280,13 +308,40 @@ class CashRegisterApp():
         # Agregar el Treeview a la ventana
         self.listOfSalesHistory.pack(expand=True, fill=tkinter.BOTH)
 
+        # Get a list of the purschase IDs in salesHistoryTotal
+        listOfPurchaseIDs = []
+        for itemInSalesHistoryTotal in CashRegisterApp.salesHistoryTotal:
+            listOfPurchaseIDs.append(CashRegisterApp.salesHistoryTotal[itemInSalesHistoryTotal]['purchaseID'])
+
+        # Get detail of current purchase ID
+        currentPurchaseID = listOfPurchaseIDs[0]
+
+
         # Llenar el Treeview con los datos del historial de ventas
         for itemInSaleHistory in CashRegisterApp.salesHistory:
             # Obtener los detalles de cada venta
             productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromSalesHistory(itemInSaleHistory)
 
-            # Insertar los datos en el Treeview
-            self.listOfSalesHistory.insert("", "end", values=(purchaseID, name, f"$ {unitPrice:.2f}", totalItems, f"$ {totalPrice:.2f}"))
+            if purchaseID == currentPurchaseID:
+                # Insertar los datos en el Treeview
+                self.listOfSalesHistory.insert("", "end", values=(purchaseID, name, f"$ {unitPrice:.2f}", totalItems, f"$ {totalPrice:.2f}"))
+            else:
+                # This means that there is a new purschase ID in the list
+
+                # Add the detail of total for the previous purchase
+                purchaseTotal = CashRegisterApp.salesHistoryTotal[currentPurchaseID]['total']
+                self.listOfSalesHistory.insert("", "end", values=("", "", "", "Total", f"$ {purchaseTotal:.2f}"))
+
+                # Update value of currentPurchaseID
+                currentPurchaseID = purchaseID
+
+                # Insert data of the current purchase
+                self.listOfSalesHistory.insert("", "end", values=(purchaseID, name, f"$ {unitPrice:.2f}", totalItems, f"$ {totalPrice:.2f}"))
+
+        # Add total of last purchase
+        purchaseTotal = CashRegisterApp.salesHistoryTotal[currentPurchaseID]['total']
+        self.listOfSalesHistory.insert("", "end", values=("", "", "", "Total", f"$ {purchaseTotal:.2f}"))
+
 
         # Botón para cerrar la ventana
         self.buttonOkSales = ttk.Button(self.salesHistoryWindow, text="Ok", command=self.salesHistoryWindow.destroy)
@@ -340,6 +395,14 @@ class CashRegisterApp():
                  "totalItems": totalItems, 
                  "totalPrice": totalPrice 
              }})
+        
+    @classmethod
+    def updateSalesHistoryTotal(cls, purchaseID, total):
+        CashRegisterApp.salesHistoryTotal.update({purchaseID:{
+                "purchaseID": purchaseID, 
+                "total": total
+            }}
+        )
         
     def exitApplication(self):
         # Cerrar la ventana actual y todas las ventanas abiertas
