@@ -6,7 +6,7 @@
 
 * Por agregar: Al imprimir el recibo al comprar, arreglar el formato de los precios para que tengan "$" al comienzo.
 
-* Por arreglar: como dijiste, el total de la factura hay que corregirlo
+
 
 
 
@@ -17,6 +17,7 @@
 
 * (santiago) Por agregar: Un texto en la ventana principal que indique "ingrese la cantidad"
 
+* (Lindsey) Por arreglar: como dijiste, el total de la factura hay que corregirlo
 # Terminados
 
 * Por arreglar: Línea 351 de CashRegisterApp da erra cuando se cierra la aplicación por el botón exit
