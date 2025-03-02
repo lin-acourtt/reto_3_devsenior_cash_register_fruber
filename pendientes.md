@@ -2,15 +2,15 @@
 
 
 
-* Por arreglar: Si el cliente pone un número mayor al que hay en stock, todavía puede agregar el producto al carrito.
+
 
 * La función exitApplication sale dos veces, eliminar una ---> Por arreglar: Línea 351 de CashRegisterApp da erra cuando se cierra la aplicación por el botón exit
 
 
 # Working on
 
+* Por arreglar: Si el cliente pone un número mayor al que hay en stock, todavía puede agregar el producto al carrito.
 
-* (santiago) Por agregar: Un texto en la ventana principal que indique "ingrese la cantidad"
 
 # Terminados
 
@@ -26,3 +26,5 @@
 * (Lindsey) Por arreglar: como dijiste, el total de la factura hay que corregirlo
 * (Lindsey) Por mejorar: (esto se me acaba de ocurrir) al ver el sales history creo que también habría que agregar el total de la compra
 * (Lindsey) Por agregar: Al imprimir el recibo al comprar, arreglar el formato de los precios para que tengan "$" al comienzo.
+
+* (santiago) Por agregar: Un texto en la ventana principal que indique "ingrese la cantidad"
