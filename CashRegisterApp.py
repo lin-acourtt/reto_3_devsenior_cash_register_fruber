@@ -2,7 +2,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from operations import centerWindow, updateSelectedProductLabel
-from exceptions import InvalidNumberInput, InvalidNumberInputHandler
+from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError
+
 
 
 
@@ -119,31 +120,47 @@ class CashRegisterApp():
 
     def addItemToShoppingCart(self):
         # The class variable "shoppingCart" will be updated with this methodinWindow, text="Exit", command=self.exitApplication, style="Exit.TButton")
+        try: 
+            
+            selected_item = self.listOfItems.selection()
 
-        # Obtain the selected product's ID
-        id = self.listOfItems.selection()[0]
+            if not selected_item:
+                # messagebox.showerror("no product(s) selected", "Please, select a product before adding to the shopping cart .")
+                raise NoProductSelectedError("no product(s) selected", "Please, select a product before adding to the shopping cart.")
 
-        # Obtain product's name
-        name = self.listOfItems.item(id)['values'][0]
 
-        # Obtain product's price
-        priceStr = self.listOfItems.item(id)['values'][1]
-        price = float(priceStr[2:len(priceStr)])
 
-        # Obtain total items to buy
-        totalItems = int(self.entryAmountToBuy.get())
 
-        if totalItems <= 0:
-            messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
-            return        
+            # Obtain the selected product's ID
+            id = selected_item[0]
 
-        # Add item to the Shopping Cart
-        self.updateShoppingCart(id, name, price, totalItems)
-        print(f"Added {totalItems} of {name} to cart. Total price for this item: ${totalItems * price:.2f}")
-        
-        # Update View Shopping Cart button
-        self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
+            # Obtain product's name
+            name = self.listOfItems.item(id)['values'][0]
 
+            # Obtain product's price
+            priceStr = self.listOfItems.item(id)['values'][1]
+            price = float(priceStr[2:len(priceStr)])
+
+            # Obtain total items to buy
+            totalItems = int(self.entryAmountToBuy.get())
+
+            if totalItems <= 0:
+                messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
+                return        
+
+            # Add item to the Shopping Cart
+            self.updateShoppingCart(id, name, price, totalItems)
+            print(f"Added {totalItems} of {name} to cart. Total price for this item: ${totalItems * price:.2f}")
+
+            # Update View Shopping Cart button
+            self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
+        except NoProductSelectedError as e:
+        # Manejar la excepción de no selección de producto
+            InvalidNumberInputHandler(e)
+    
+        except InvalidNumberInput as e:
+        # Manejar la excepción de cantidad inválida
+            InvalidNumberInputHandler(e)
     def openShoppingCartWindow(self):
         # Open a new window with the shopping cart's contents
 
@@ -341,17 +358,6 @@ class CashRegisterApp():
                  "totalPrice": totalPrice 
              }})
         
-    def exitApplication(self):
-        # Cerrar la ventana actual y todas las ventanas abiertas
-        self.cashRegisterAppMainWindow.destroy()  # Esto cerrará la ventana principal
-        # Si tienes otras ventanas abiertas, también puedes cerrarlas de manera similar:
-        # self.salesHistoryWindow.destroy()  # Para cerrar la ventana de historial de ventas
-        # self.shoppingCartWindow.destroy()  # Para cerrar la ventana del carrito de compras
-        # Si tienes más ventanas, agrega sus nombres aquí para cerrarlas.
-        tkinter.quit()  # Esto terminará la ejecución de la aplicación.
     
-    # # Crear el botón "Salir" en la ventana principal
-    # self.buttonExit = ttk.Button(self.cashRegisterAppMainWindow, text="Exit", command=self.exitApplication)
-    # self.buttonExit.pack()        
         
         
