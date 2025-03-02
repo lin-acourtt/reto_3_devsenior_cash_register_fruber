@@ -2,7 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from operations import centerWindow, updateSelectedProductLabel
-from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError
+from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
 
 
 
@@ -148,9 +148,15 @@ class CashRegisterApp():
             # Obtain product's price
             priceStr = self.listOfItems.item(id)['values'][1]
             price = float(priceStr[2:len(priceStr)])
+            
+            # get the stock
+            stock = int(self.listOfItems.item(id)['values'][2])
 
             # Obtain total items to buy
             totalItems = int(self.entryAmountToBuy.get())
+            
+            if totalItems > stock:
+                raise InsuficientStockError(name, stock)
 
             if totalItems <= 0:
                 messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
@@ -162,6 +168,7 @@ class CashRegisterApp():
 
             # Update View Shopping Cart button
             self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
+            
         except NoProductSelectedError as e:
         # Manejar la excepción de no selección de producto
             InvalidNumberInputHandler(e)
@@ -169,6 +176,10 @@ class CashRegisterApp():
         except InvalidNumberInput as e:
         # Manejar la excepción de cantidad inválida
             InvalidNumberInputHandler(e)
+        
+        except InsuficientStockError  as e:
+            InsufficientStockErrorHandler(e)    
+            
     def openShoppingCartWindow(self):
         # Open a new window with the shopping cart's contents
 
