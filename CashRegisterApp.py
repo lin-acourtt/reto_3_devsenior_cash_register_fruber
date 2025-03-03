@@ -2,11 +2,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter.constants import DISABLED, NORMAL 
-from operations import centerWindow, updateSelectedProductLabel
+from operations import centerWindow, updateSelectedProductLabel, is_valid_number
 from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
-
-
-
 
 ### Obtain product ID from selecction on TreeViewList
 # treeViewList.selection()[0]
@@ -59,34 +56,15 @@ class CashRegisterApp():
         for prodID in listOfProducts:
             self.listOfItems.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
         
-        
-        
         # Label to display the product that will be added to the cart
         self.labelSelectedProduct = ttk.Label(self.cashRegisterAppMainWindow,text="Selected item")
         self.labelSelectedProduct.pack()
-        
-        
-        
-        
 
         # On button release, the label of selectedProductLabel will be updated with the selected product
         self.listOfItems.bind("<ButtonRelease-1>", lambda event:updateSelectedProductLabel(event,self.listOfItems, self.labelSelectedProduct))
 
-
-        def is_valid_number(input_value):
-            if input_value == "":
-                return True  # Allow empty value (for the user to clear the field)
-            try:
-                float(input_value)  # Try to convert the input to a float
-                return True
-            except ValueError:
-                InvalidNumberInputHandler(InvalidNumberInput("Invalid entry, must be a number"))
-                return False  # Return False if the input is not a valid number
-
-        # In your GUI setup:
-
-        # Create a tkinter variable to hold the input value
-        input_validation = tkinter.StringVar()
+        # Create a tkinter string variable to hold the input value in the entry box for the amount of products
+        input_validation = tkinter.StringVar(self.cashRegisterAppMainWindow)
 
         # Create a validation command that will call is_valid_number
         vcmd = (self.cashRegisterAppMainWindow.register(is_valid_number), '%P')
@@ -97,88 +75,74 @@ class CashRegisterApp():
         self.labelAmount = ttk.Label(frameEntry, text="amount: ")
         self.labelAmount.grid(row=0, column=0, padx=5)
 
-        # Create the Entry widget with validation
-        # self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow, textvariable=input_validation, validate="key", validatecommand=vcmd)
-        # self.entryAmountToBuy.pack(side="left")  
-        
+        # Create the Entry widget with validation        
         self.entryAmountToBuy = ttk.Entry(frameEntry, textvariable=input_validation, validate="key", validatecommand=vcmd)
         self.entryAmountToBuy.grid(row=0, column=1, padx=5)
-
-        # # Entry to specify the amount of items to be added to the shopping cart
-        # self.entryAmountToBuy = ttk.Entry(self.cashRegisterAppMainWindow,text="0")
-        # self.entryAmountToBuy.pack()
 
         # Button to add product to shopping cart 
         self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",command=self.addItemToShoppingCart)
         self.buttonAddProduct.pack()
 
+        # Button to open a new Window to the shopping cart
         self.buttonViewShoppingCart = ttk.Button(self.cashRegisterAppMainWindow,text="View shopping cart",command=self.openShoppingCartWindow, state=DISABLED)
         self.buttonViewShoppingCart.pack()
 
+        # Button to open a new Window to the see the sales history
         self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow, state=DISABLED)
         self.buttonViewSalesHistory.pack()
         
-        # Botón para salir
-        
+        # Button to exit the application        
         self.buttonExit = ttk.Button(self.cashRegisterAppMainWindow, text="Exit", command=self.exitApplication, style="Exit.TButton")
         self.buttonExit.pack(pady=20)
         
         self.cashRegisterAppMainWindow.mainloop()
         
     def exitApplication(self):
-        # Cerrar la ventana principal y salir
-        self.cashRegisterAppMainWindow.destroy()  # Cierra la ventana principal
-        tkinter.quit()  # Termina la ejecución de la aplicación    
+        # Close the main window
+        self.cashRegisterAppMainWindow.destroy() 
 
     def addItemToShoppingCart(self):
-        # The class variable "shoppingCart" will be updated with this methodinWindow, text="Exit", command=self.exitApplication, style="Exit.TButton")
-        try: 
-            
+        
+        try:     
             selected_item = self.listOfItems.selection()
 
             if not selected_item:
                 # messagebox.showerror("no product(s) selected", "Please, select a product before adding to the shopping cart .")
                 raise NoProductSelectedError("no product(s) selected", "Please, select a product before adding to the shopping cart.")
 
-
-
-
             # Obtain the selected product's ID
             id = selected_item[0]
 
-        # Check if the same item is already in the shopping cart
+            # Check if the same item is already in the shopping cart
             try:
                 totalItems = CashRegisterApp.shoppingCart[id]['totalItems']
-                print(f"ver si da algo: {totalItems}")
             except:
+                # If the item is not in the shopping cart, consider its initial amount as 0
                 totalItems = 0
             
-
-        # Obtain product's name
+            # Obtain product's name
             name = self.listOfItems.item(id)['values'][0]
 
-                # Obtain product's price
+            # Obtain product's price
             priceStr = self.listOfItems.item(id)['values'][1]
+            # Remove the first portion of the string "$ "
             price = float(priceStr[2:len(priceStr)])
 
-                # get the stock
+            # Obtain the stock value
             stock = int(self.listOfItems.item(id)['values'][2])
 
-        # Obtain total items to buy
+            # Calculate the total item to assign to the shopping cart
             totalItems = totalItems + int(self.entryAmountToBuy.get())
-                # Obtain total items to buy
-
 
             if totalItems > stock:
                 raise InsuficientStockError(name, stock)
 
             if totalItems <= 0:
-                    messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
-                    return        
+                messagebox.showerror("Invalid Quantity", "The quantity must be greater than 0.")
+                return        
 
             # Add item to the Shopping Cart
             self.updateShoppingCart(id, name, price, totalItems)
-            print(f"Added {totalItems} of {name} to cart. Total price for this item: ${totalItems * price:.2f}")
 
             # Update View Shopping Cart button
             self.buttonViewShoppingCart['text'] = f"View shopping cart ({len(CashRegisterApp.shoppingCart)})"
@@ -186,7 +150,6 @@ class CashRegisterApp():
             # Change state of the button only if the state is disabled
             if (self.buttonViewShoppingCart['state'].string == 'disabled'):
                 self.buttonViewShoppingCart['state'] = NORMAL
-
 
         except NoProductSelectedError as e:
         # Manejar la excepción de no selección de producto
@@ -200,8 +163,8 @@ class CashRegisterApp():
             InsufficientStockErrorHandler(e)    
             
     def openShoppingCartWindow(self):
+        
         # Open a new window with the shopping cart's contents
-
         self.shoppingCartWindow = tkinter.Tk()
         self.shoppingCartWindow.title("Shopping Cart Info")
 
@@ -222,6 +185,11 @@ class CashRegisterApp():
         for product in CashRegisterApp.shoppingCart:
             self.listOfItemsShoppingCart.insert("","end",iid=product,values=(CashRegisterApp.shoppingCart[product]["name"],CashRegisterApp.shoppingCart[product]["totalItems"],f"$ {CashRegisterApp.shoppingCart[product]["totalPrice"]:.2f}"))
         
+        # Add the total price of the items in the shopping cart
+        # Add total of last purchase
+        purchaseTotal = self.calculateTotalPrice()
+        self.listOfItemsShoppingCart.insert("", "end", values=("Total", "", f"$ {purchaseTotal:.2f}"))
+
         self.buttonConfirmPurchase = ttk.Button(self.shoppingCartWindow,text="Buy", command=self.buy)
         self.buttonConfirmPurchase.pack()
 
@@ -231,7 +199,7 @@ class CashRegisterApp():
         self.shoppingCartWindow.mainloop()
 
     def buy(self):
-        
+        # The string to print the receipt details is created
         receipt_details = []
         
         # Sales history has to be updated
@@ -275,14 +243,12 @@ class CashRegisterApp():
         messagebox.showinfo("Purchase complete", f"Purchase with Receipt ID {CashRegisterApp.purchaseID - 1} completed.\n\n{receipt_message}")
 
     def calculateTotalPrice(self):
-    # Calcular el precio total de la compra
+        # Calculate the total cost of the purchase
         total_price = 0.0
         for itemInShoppingCart in CashRegisterApp.shoppingCart:
             item = CashRegisterApp.shoppingCart[itemInShoppingCart]
-            #print(f"Item: {item['name']}, Price: {item['unitPrice']}, Quantity: {item['totalItems']}, Total: {item['totalPrice']}")
             total_price += item["totalPrice"]
             
-            # total_price += CashRegisterApp.shoppingCart[itemInShoppingCart]["totalPrice"]
         return total_price
 
     def cancelPurchase(self):
@@ -304,15 +270,6 @@ class CashRegisterApp():
         
     def openSalesHistoryWindow(self):
 
-        # Pending, create separate funcion for this
-        # salesHistoryStrings = []
-        # salesHistoryStrings.append("----------------------")
-        # salesHistoryStrings.append("Receipt ID - Product - Unit Price - Total Items - Total Price")
-        # for itemInSaleHistory in CashRegisterApp.salesHistory:
-        #     productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromSalesHistory(itemInSaleHistory)
-        #     salesHistoryStrings.append(f"\n{purchaseID} - {name} - {unitPrice} - {totalItems} - {totalPrice}")
-        # salesHistoryStrings.append("\n----------------------")
-        
         self.salesHistoryWindow = tkinter.Tk()
         self.salesHistoryWindow.title("Sales History Information")
 
@@ -321,30 +278,24 @@ class CashRegisterApp():
         window_height = 400
 
         centerWindow(self.salesHistoryWindow,window_width,window_height)
-
-        # self.textSalesHistoryText = tkinter.Label(self.salesHistoryWindow, text=salesHistoryStrings)
-        # self.textSalesHistoryText.pack()
-
-        # self.buttonOkSales = ttk.Button(self.salesHistoryWindow,text="Ok", command=self.salesHistoryWindow.destroy)
-        # self.buttonOkSales.pack()
         
         self.listOfSalesHistory = ttk.Treeview(self.salesHistoryWindow, columns=("Receipt ID", "Product", "Unit Price", "Total Items", "Total Price"), show="headings")
 
-        # Definir los encabezados de las columnas
+        # Name the columns
         self.listOfSalesHistory.heading("Receipt ID", text="Receipt ID")
         self.listOfSalesHistory.heading("Product", text="Product")
         self.listOfSalesHistory.heading("Unit Price", text="Unit Price")
         self.listOfSalesHistory.heading("Total Items", text="Total Items")
         self.listOfSalesHistory.heading("Total Price", text="Total Price")
 
-        # Ajustar el ancho de las columnas
+        # Adjust column's width
         self.listOfSalesHistory.column("Receipt ID", width=100)
         self.listOfSalesHistory.column("Product", width=150)
         self.listOfSalesHistory.column("Unit Price", width=100)
         self.listOfSalesHistory.column("Total Items", width=100)
         self.listOfSalesHistory.column("Total Price", width=100)
 
-        # Agregar el Treeview a la ventana
+        # Add the treeview to window
         self.listOfSalesHistory.pack(expand=True, fill=tkinter.BOTH)
 
         # Get a list of the purschase IDs in salesHistoryTotal
@@ -352,21 +303,18 @@ class CashRegisterApp():
         for itemInSalesHistoryTotal in CashRegisterApp.salesHistoryTotal:
             listOfPurchaseIDs.append(CashRegisterApp.salesHistoryTotal[itemInSalesHistoryTotal]['purchaseID'])
 
-        # Get detail of current purchase ID
+        # Get detail of current (1st) purchase ID
         currentPurchaseID = listOfPurchaseIDs[0]
 
-
-        # Llenar el Treeview con los datos del historial de ventas
+        # Fill the treeview with the SalesHistory
         for itemInSaleHistory in CashRegisterApp.salesHistory:
-            # Obtener los detalles de cada venta
+            # Obtain details for each item
             productID, purchaseID, name, unitPrice, totalItems, totalPrice = self.obtainItemFromSalesHistory(itemInSaleHistory)
 
             if purchaseID == currentPurchaseID:
-                # Insertar los datos en el Treeview
                 self.listOfSalesHistory.insert("", "end", values=(purchaseID, name, f"$ {unitPrice:.2f}", totalItems, f"$ {totalPrice:.2f}"))
             else:
                 # This means that there is a new purschase ID in the list
-
                 # Add the detail of total for the previous purchase
                 purchaseTotal = CashRegisterApp.salesHistoryTotal[currentPurchaseID]['total']
                 self.listOfSalesHistory.insert("", "end", values=("", "", "", "Total", f"$ {purchaseTotal:.2f}"))
@@ -381,16 +329,15 @@ class CashRegisterApp():
         purchaseTotal = CashRegisterApp.salesHistoryTotal[currentPurchaseID]['total']
         self.listOfSalesHistory.insert("", "end", values=("", "", "", "Total", f"$ {purchaseTotal:.2f}"))
 
-
-        # Botón para cerrar la ventana
+        # Button to close the window
         self.buttonOkSales = ttk.Button(self.salesHistoryWindow, text="Ok", command=self.salesHistoryWindow.destroy)
         self.buttonOkSales.pack()    
-
 
         self.salesHistoryWindow.mainloop()
 
     @classmethod
     def obtainItemFromShoppingCart(cls, id):
+        # Obtain details from item in shopping cart by its ID
         productID = CashRegisterApp.shoppingCart[id]["productID"]
         purchaseID = CashRegisterApp.shoppingCart[id]["purchaseID"]
         name = CashRegisterApp.shoppingCart[id]["name"]
@@ -401,6 +348,7 @@ class CashRegisterApp():
     
     @classmethod
     def obtainItemFromSalesHistory(cls, id):
+        # Obtain details from item in shopping cart by its ID
         productID = CashRegisterApp.salesHistory[id]["productID"]
         purchaseID = CashRegisterApp.salesHistory[id]["purchaseID"]
         name = CashRegisterApp.salesHistory[id]["name"]

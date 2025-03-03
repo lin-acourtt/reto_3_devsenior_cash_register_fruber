@@ -3,6 +3,7 @@
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
 
 
 
@@ -26,6 +27,16 @@ def updateSelectedProductLabel(event, treeViewList: ttk.Treeview, labelToModify:
     id = treeViewList.selection()[0]
     newText = treeViewList.item(id)['values'][0]
     labelToModify.configure(text=newText)
+
+def is_valid_number(input_value):
+    if input_value == "":
+        return True  # Allow empty value (for the user to clear the field)
+    try:
+        float(input_value)  # Try to convert the input to a float
+        return True
+    except ValueError:
+        InvalidNumberInputHandler(InvalidNumberInput("Invalid entry, must be a number"))
+        return False  # Return False if the input is not a valid number
 
 
 
