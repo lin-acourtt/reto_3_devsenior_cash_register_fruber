@@ -1,10 +1,6 @@
 # Sin asignar
 
-
-
-
-
-* La función exitApplication sale dos veces, eliminar una ---> Por arreglar: Línea 351 de CashRegisterApp da erra cuando se cierra la aplicación por el botón exit
+empty
 
 
 # Working on
@@ -27,4 +23,8 @@
 * (Lindsey) Por mejorar: (esto se me acaba de ocurrir) al ver el sales history creo que también habría que agregar el total de la compra
 * (Lindsey) Por agregar: Al imprimir el recibo al comprar, arreglar el formato de los precios para que tengan "$" al comienzo.
 
+
+
+
+* La función exitApplication sale dos veces, eliminar una ---> Por arreglar: Línea 351 de CashRegisterApp da erra cuando se cierra la aplicación por el botón exit
 * (santiago) Por agregar: Un texto en la ventana principal que indique "ingrese la cantidad"
