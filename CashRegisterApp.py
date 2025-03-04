@@ -4,6 +4,8 @@ from tkinter import messagebox
 from tkinter.constants import DISABLED, NORMAL 
 from operations import centerWindow, updateSelectedProductLabel, is_valid_number
 from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
+from styless import apply_treeview_styles, apply_Label_styless, apply_Frame_styles, apply_entry_styless, apply_button_styless
+
 
 ### Obtain product ID from selecction on TreeViewList
 # treeViewList.selection()[0]
@@ -31,6 +33,9 @@ class CashRegisterApp():
 
         # Create Window
         self.cashRegisterAppMainWindow = tkinter.Tk()
+        
+        style = ttk.Style()
+        
         # Set parameters
         self.cashRegisterAppMainWindow.title("Shopping")
 
@@ -43,7 +48,9 @@ class CashRegisterApp():
         self.labelSelectProductTitle = ttk.Label(self.cashRegisterAppMainWindow,text="Please select a product to shop: ")
         self.labelSelectProductTitle.pack()
 
-        # Adding the TreeView to display the products
+        apply_treeview_styles(style)
+        
+                # Adding the TreeView to display the products
         # Doing only this, will create an empty heading
         self.listOfItems = ttk.Treeview(self.cashRegisterAppMainWindow, columns=("Name", "Price", "Stock"), show="headings")
         # It is necessary to add the name of each column
@@ -51,7 +58,9 @@ class CashRegisterApp():
         self.listOfItems.heading("Price", text="Price")
         self.listOfItems.heading("Stock", text="Stock")
         self.listOfItems.pack()
-
+        
+        
+        
         # Now the Treeview object will be filled with the products information
         for prodID in listOfProducts:
             self.listOfItems.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
@@ -69,18 +78,26 @@ class CashRegisterApp():
         # Create a validation command that will call is_valid_number
         vcmd = (self.cashRegisterAppMainWindow.register(is_valid_number), '%P')
         
-        frameEntry = ttk.Frame(self.cashRegisterAppMainWindow)
+        apply_Frame_styles(style)
+        frameEntry = ttk.Frame(self.cashRegisterAppMainWindow, style="TFrame")
         frameEntry.pack(pady=10)
         
+        apply_Label_styless(style)
         self.labelAmount = ttk.Label(frameEntry, text="amount: ")
         self.labelAmount.grid(row=0, column=0, padx=5)
+
+        apply_entry_styless(style)
 
         # Create the Entry widget with validation        
         self.entryAmountToBuy = ttk.Entry(frameEntry, textvariable=input_validation, validate="key", validatecommand=vcmd)
         self.entryAmountToBuy.grid(row=0, column=1, padx=5)
+        
 
+        apply_button_styless(style)
+        
         # Button to add product to shopping cart 
-        self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",command=self.addItemToShoppingCart)
+        self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",
+                                        command=self.addItemToShoppingCart, style="TButton")
         self.buttonAddProduct.pack()
 
         # Button to open a new Window to the shopping cart
@@ -90,6 +107,14 @@ class CashRegisterApp():
         # Button to open a new Window to the see the sales history
         self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow, state=DISABLED)
         self.buttonViewSalesHistory.pack()
+        
+        style.configure("Exit.TButton",
+                        background="red3",  # Fondo rojo
+                        foreground="brown4",  # Texto blanco
+                        font=("Arial", 12, "bold"),  # Fuente del texto
+                        padding=10)  # Espaciado interno
+
+        
         
         # Button to exit the application        
         self.buttonExit = ttk.Button(self.cashRegisterAppMainWindow, text="Exit", command=self.exitApplication, style="Exit.TButton")
@@ -164,6 +189,7 @@ class CashRegisterApp():
             
     def openShoppingCartWindow(self):
         
+        
         # Open a new window with the shopping cart's contents
         self.shoppingCartWindow = tkinter.Tk()
         self.shoppingCartWindow.title("Shopping Cart Info")
@@ -173,7 +199,10 @@ class CashRegisterApp():
         window_height = 400
 
         centerWindow(self.shoppingCartWindow,window_width,window_height)
-
+        style = ttk.Style()
+        
+        apply_treeview_styles(style)
+        
         self.listOfItemsShoppingCart = ttk.Treeview(self.shoppingCartWindow, columns=("Name", "Amount", "Total_Price"), show="headings")
         # It is necessary to add the name of each column
         self.listOfItemsShoppingCart.heading("Name", text="Name")
@@ -189,6 +218,8 @@ class CashRegisterApp():
         # Add total of last purchase
         purchaseTotal = self.calculateTotalPrice()
         self.listOfItemsShoppingCart.insert("", "end", values=("Total", "", f"$ {purchaseTotal:.2f}"))
+        
+        apply_button_styless(style)
 
         self.buttonConfirmPurchase = ttk.Button(self.shoppingCartWindow,text="Buy", command=self.buy)
         self.buttonConfirmPurchase.pack()
@@ -278,6 +309,8 @@ class CashRegisterApp():
         window_height = 400
 
         centerWindow(self.salesHistoryWindow,window_width,window_height)
+        style = ttk.Style()
+        apply_treeview_styles(style)
         
         self.listOfSalesHistory = ttk.Treeview(self.salesHistoryWindow, columns=("Receipt ID", "Product", "Unit Price", "Total Items", "Total Price"), show="headings")
 
