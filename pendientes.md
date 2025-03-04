@@ -1,7 +1,6 @@
 # Sin asignar
 
-empty
-
+* Cuando se selecciona un producto, pero no se escribe un número, al dar clic en agregar carrito ocurre un value error
 
 # Working on
 
