@@ -4,7 +4,7 @@ from tkinter import messagebox
 from tkinter.constants import DISABLED, NORMAL 
 from operations import centerWindow, updateSelectedProductLabel, is_valid_number
 from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
-from styless import apply_treeview_styles, apply_Label_styless, apply_Frame_styles, apply_entry_styless, apply_button_styless
+from styles import apply_Treeview_styles, apply_Label_styles, apply_Frame_styles, apply_Entry_styles, apply_Button_styles
 
 
 ### Obtain product ID from selecction on TreeViewList
@@ -34,7 +34,13 @@ class CashRegisterApp():
         # Create Window
         self.cashRegisterAppMainWindow = tkinter.Tk()
         
-        style = ttk.Style()
+        # Applying styles
+        style = ttk.Style(self.cashRegisterAppMainWindow)
+        apply_Treeview_styles(style)
+        apply_Frame_styles(style)
+        apply_Label_styles(style)
+        apply_Entry_styles(style)
+        apply_Button_styles(style)
         
         # Set parameters
         self.cashRegisterAppMainWindow.title("Shopping")
@@ -44,30 +50,51 @@ class CashRegisterApp():
         window_height = 600
 
         centerWindow(self.cashRegisterAppMainWindow,window_width,window_height)
+        self.cashRegisterAppMainWindow.resizable(False,False)
 
+        # Create Label
         self.labelSelectProductTitle = ttk.Label(self.cashRegisterAppMainWindow,text="Please select a product to shop: ")
         self.labelSelectProductTitle.pack()
-
-        apply_treeview_styles(style)
         
-                # Adding the TreeView to display the products
+        # Adding a frame to place the treeview and its corresponding scrollbar
+        self.frameTreeview = ttk.Frame(self.cashRegisterAppMainWindow)
+        self.frameTreeview.pack()
+        
+        # Adding the TreeView to display the products
         # Doing only this, will create an empty heading
-        self.listOfItems = ttk.Treeview(self.cashRegisterAppMainWindow, columns=("Name", "Price", "Stock"), show="headings")
+        self.listOfItems = ttk.Treeview(self.frameTreeview, columns=("Name", "Price", "Stock"), show="headings")
         # It is necessary to add the name of each column
         self.listOfItems.heading("Name", text="Name")
         self.listOfItems.heading("Price", text="Price")
         self.listOfItems.heading("Stock", text="Stock")
-        self.listOfItems.pack()
-        
-        
-        
         # Now the Treeview object will be filled with the products information
         for prodID in listOfProducts:
             self.listOfItems.insert("","end",iid=prodID,values=(listOfProducts[prodID]["name"],f"$ {listOfProducts[prodID]["price"]:.2f}",listOfProducts[prodID]["stock"]))
         
+        self.listOfItems.column("Name",width=150)
+        self.listOfItems.column("Price",width=150)
+        self.listOfItems.column("Stock",width=150)
+
+        self.listOfItems.grid(row=0,column=0)
+        
+        # Constructing vertical scrollbar with treeview
+        self.verscrlbar = ttk.Scrollbar(self.frameTreeview, orient ="vertical", command = self.listOfItems.yview)
+        
+        # Placing the scrollback into the Frame's grid.
+        self.verscrlbar.grid(row=0,column=1,sticky="nesw") #nesw
+        
+        # Configuring treeview with the yscroll command
+        self.listOfItems.configure(yscrollcommand = self.verscrlbar.set)
+
+        # Create Frame to contain the remaining widgets
+        self.frameWidgets = ttk.Frame(self.cashRegisterAppMainWindow, style="TFrame")
+        self.frameWidgets.pack(pady=15)
+        self.frameWidgets.rowconfigure(2,minsize=100)
+        self.frameWidgets.columnconfigure(1,minsize=50)
+        
         # Label to display the product that will be added to the cart
-        self.labelSelectedProduct = ttk.Label(self.cashRegisterAppMainWindow,text="Selected item")
-        self.labelSelectedProduct.pack()
+        self.labelSelectedProduct = ttk.Label(self.frameWidgets,text="Selected item")
+        self.labelSelectedProduct.grid(row=0,column=0)
 
         # On button release, the label of selectedProductLabel will be updated with the selected product
         self.listOfItems.bind("<ButtonRelease-1>", lambda event:updateSelectedProductLabel(event,self.listOfItems, self.labelSelectedProduct))
@@ -78,44 +105,35 @@ class CashRegisterApp():
         # Create a validation command that will call is_valid_number
         vcmd = (self.cashRegisterAppMainWindow.register(is_valid_number), '%P')
         
-        apply_Frame_styles(style)
-        frameEntry = ttk.Frame(self.cashRegisterAppMainWindow, style="TFrame")
-        frameEntry.pack(pady=10)
-        
-        apply_Label_styless(style)
-        self.labelAmount = ttk.Label(frameEntry, text="amount: ")
+        self.frameLabelEntry = ttk.Frame(self.frameWidgets)
+        self.frameLabelEntry.grid(row=1,column=0)
+
+        self.labelAmount = ttk.Label(self.frameLabelEntry, text="Amount: ")
         self.labelAmount.grid(row=0, column=0, padx=5)
 
-        apply_entry_styless(style)
-
         # Create the Entry widget with validation        
-        self.entryAmountToBuy = ttk.Entry(frameEntry, textvariable=input_validation, validate="key", validatecommand=vcmd)
+        self.entryAmountToBuy = ttk.Entry(self.frameLabelEntry, textvariable=input_validation, validate="key", validatecommand=vcmd)
         self.entryAmountToBuy.grid(row=0, column=1, padx=5)
         
-
-        apply_button_styless(style)
-        
         # Button to add product to shopping cart 
-        self.buttonAddProduct = ttk.Button(self.cashRegisterAppMainWindow,text="Add item to shopping cart",
+        self.buttonAddProduct = ttk.Button(self.frameWidgets,text="Add item to shopping cart",
                                         command=self.addItemToShoppingCart, style="TButton")
-        self.buttonAddProduct.pack()
+        self.buttonAddProduct.grid(row=2,column=0)
 
         # Button to open a new Window to the shopping cart
-        self.buttonViewShoppingCart = ttk.Button(self.cashRegisterAppMainWindow,text="View shopping cart",command=self.openShoppingCartWindow, state=DISABLED)
-        self.buttonViewShoppingCart.pack()
+        self.buttonViewShoppingCart = ttk.Button(self.frameWidgets,text="View shopping cart",command=self.openShoppingCartWindow, state=DISABLED)
+        self.buttonViewShoppingCart.grid(row=0,column=2)
 
         # Button to open a new Window to the see the sales history
-        self.buttonViewSalesHistory = ttk.Button(self.cashRegisterAppMainWindow,text="View sales history",command=self.openSalesHistoryWindow, state=DISABLED)
-        self.buttonViewSalesHistory.pack()
+        self.buttonViewSalesHistory = ttk.Button(self.frameWidgets,text="View sales history",command=self.openSalesHistoryWindow, state=DISABLED)
+        self.buttonViewSalesHistory.grid(row=2,column=2)
         
         style.configure("Exit.TButton",
-                        background="red3",  # Fondo rojo
-                        foreground="brown4",  # Texto blanco
-                        font=("Arial", 12, "bold"),  # Fuente del texto
-                        padding=10)  # Espaciado interno
+                        background="red3",  # Red bg
+                        foreground="brown4",  # White text
+                        font=("Arial", 10, "bold"))  # Fontsize
+                        #padding=10)  # Padding
 
-        
-        
         # Button to exit the application        
         self.buttonExit = ttk.Button(self.cashRegisterAppMainWindow, text="Exit", command=self.exitApplication, style="Exit.TButton")
         self.buttonExit.pack(pady=20)
@@ -132,7 +150,6 @@ class CashRegisterApp():
             selected_item = self.listOfItems.selection()
 
             if not selected_item:
-                # messagebox.showerror("no product(s) selected", "Please, select a product before adding to the shopping cart .")
                 raise NoProductSelectedError("no product(s) selected", "Please, select a product before adding to the shopping cart.")
 
             # Obtain the selected product's ID
@@ -185,31 +202,42 @@ class CashRegisterApp():
             InvalidNumberInputHandler(e)
         
         except InsuficientStockError  as e:
-            InsufficientStockErrorHandler(e)    
+            InsufficientStockErrorHandler(e)  
+
+        except ValueError as e:  
+            messagebox.showerror("Error", "Invalid input")
             
     def openShoppingCartWindow(self):
-        
         
         # Open a new window with the shopping cart's contents
         self.shoppingCartWindow = tkinter.Tk()
         self.shoppingCartWindow.title("Shopping Cart Info")
+        self.shoppingCartWindow.resizable(False,False)
 
         # This will be the size of the Window
         window_width = 500
         window_height = 400
 
         centerWindow(self.shoppingCartWindow,window_width,window_height)
-        style = ttk.Style()
         
-        apply_treeview_styles(style)
+        style = ttk.Style(self.shoppingCartWindow)
+        apply_Treeview_styles(style)
+        apply_Button_styles(style)
+
+        # Adding a frame to place the treeview and its corresponding scrollbar
+        self.frameTreeviewShoppingCart = ttk.Frame(self.shoppingCartWindow)
+        self.frameTreeviewShoppingCart.pack(pady=10)
         
-        self.listOfItemsShoppingCart = ttk.Treeview(self.shoppingCartWindow, columns=("Name", "Amount", "Total_Price"), show="headings")
+        self.listOfItemsShoppingCart = ttk.Treeview(self.frameTreeviewShoppingCart, columns=("Name", "Amount", "Total_Price"), show="headings")
         # It is necessary to add the name of each column
         self.listOfItemsShoppingCart.heading("Name", text="Name")
         self.listOfItemsShoppingCart.heading("Amount", text="Amount")
         self.listOfItemsShoppingCart.heading("Total_Price", text="Total Price")
+        self.listOfItemsShoppingCart.column("Name",width=100)
+        self.listOfItemsShoppingCart.column("Amount",width=100)
+        self.listOfItemsShoppingCart.column("Total_Price",width=100)
         
-        self.listOfItemsShoppingCart.pack()
+        self.listOfItemsShoppingCart.grid(row=0,column=0)
 
         for product in CashRegisterApp.shoppingCart:
             self.listOfItemsShoppingCart.insert("","end",iid=product,values=(CashRegisterApp.shoppingCart[product]["name"],CashRegisterApp.shoppingCart[product]["totalItems"],f"$ {CashRegisterApp.shoppingCart[product]["totalPrice"]:.2f}"))
@@ -219,13 +247,20 @@ class CashRegisterApp():
         purchaseTotal = self.calculateTotalPrice()
         self.listOfItemsShoppingCart.insert("", "end", values=("Total", "", f"$ {purchaseTotal:.2f}"))
         
-        apply_button_styless(style)
+        # Constructing vertical scrollbar with treeview
+        self.scrlShoppingCart = ttk.Scrollbar(self.frameTreeviewShoppingCart, orient ="vertical", command = self.listOfItemsShoppingCart.yview)
+        
+        # Placing the scrollback into the Frame's grid.
+        self.scrlShoppingCart.grid(row=0,column=1,sticky="nesw") #nesw
+        
+        # Configuring treeview with the yscroll command
+        self.listOfItemsShoppingCart.configure(yscrollcommand = self.scrlShoppingCart.set)
 
         self.buttonConfirmPurchase = ttk.Button(self.shoppingCartWindow,text="Buy", command=self.buy)
-        self.buttonConfirmPurchase.pack()
+        self.buttonConfirmPurchase.pack(pady=10)
 
         self.buttonCancelPurchase = ttk.Button(self.shoppingCartWindow,text="Cancel", command=self.cancelPurchase)
-        self.buttonCancelPurchase.pack()
+        self.buttonCancelPurchase.pack(pady=10)
 
         self.shoppingCartWindow.mainloop()
 
@@ -303,16 +338,22 @@ class CashRegisterApp():
 
         self.salesHistoryWindow = tkinter.Tk()
         self.salesHistoryWindow.title("Sales History Information")
+        self.salesHistoryWindow.resizable(False,False)
 
         # This will be the size of the Window
-        window_width = 500
+        window_width = 600
         window_height = 400
 
         centerWindow(self.salesHistoryWindow,window_width,window_height)
-        style = ttk.Style()
-        apply_treeview_styles(style)
+        style = ttk.Style(self.salesHistoryWindow)
+        apply_Treeview_styles(style)
+        apply_Button_styles(style)
+
+        # Adding a frame to place the treeview and its corresponding scrollbar
+        self.frameTreeviewSalesHistory = ttk.Frame(self.salesHistoryWindow)
+        self.frameTreeviewSalesHistory.pack(pady=10)
         
-        self.listOfSalesHistory = ttk.Treeview(self.salesHistoryWindow, columns=("Receipt ID", "Product", "Unit Price", "Total Items", "Total Price"), show="headings")
+        self.listOfSalesHistory = ttk.Treeview(self.frameTreeviewSalesHistory, columns=("Receipt ID", "Product", "Unit Price", "Total Items", "Total Price"), show="headings")
 
         # Name the columns
         self.listOfSalesHistory.heading("Receipt ID", text="Receipt ID")
@@ -323,13 +364,13 @@ class CashRegisterApp():
 
         # Adjust column's width
         self.listOfSalesHistory.column("Receipt ID", width=100)
-        self.listOfSalesHistory.column("Product", width=150)
+        self.listOfSalesHistory.column("Product", width=100)
         self.listOfSalesHistory.column("Unit Price", width=100)
         self.listOfSalesHistory.column("Total Items", width=100)
         self.listOfSalesHistory.column("Total Price", width=100)
 
         # Add the treeview to window
-        self.listOfSalesHistory.pack(expand=True, fill=tkinter.BOTH)
+        self.listOfSalesHistory.grid(row=0,column=0)
 
         # Get a list of the purschase IDs in salesHistoryTotal
         listOfPurchaseIDs = []
@@ -362,9 +403,18 @@ class CashRegisterApp():
         purchaseTotal = CashRegisterApp.salesHistoryTotal[currentPurchaseID]['total']
         self.listOfSalesHistory.insert("", "end", values=("", "", "", "Total", f"$ {purchaseTotal:.2f}"))
 
+        # Constructing vertical scrollbar with treeview
+        self.scrlSalesHistory = ttk.Scrollbar(self.frameTreeviewSalesHistory, orient ="vertical", command = self.listOfSalesHistory.yview)
+        
+        # Placing the scrollback into the Frame's grid.
+        self.scrlSalesHistory.grid(row=0,column=1,sticky="nesw") #nesw
+        
+        # Configuring treeview with the yscroll command
+        self.listOfSalesHistory.configure(yscrollcommand = self.scrlSalesHistory.set)
+
         # Button to close the window
         self.buttonOkSales = ttk.Button(self.salesHistoryWindow, text="Ok", command=self.salesHistoryWindow.destroy)
-        self.buttonOkSales.pack()    
+        self.buttonOkSales.pack(pady=10)    
 
         self.salesHistoryWindow.mainloop()
 

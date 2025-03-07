@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-def apply_treeview_styles(style):
+def apply_Treeview_styles(style):
     # style = ttk.Style()
     
     style.configure("Treeview",
@@ -29,12 +29,12 @@ def apply_Frame_styles(style):
                 relief="flat",   
                 padding=20)   
 
-def apply_Label_styless(style):
+def apply_Label_styles(style):
         style.configure("TLabel",
                 foreground="green4",      # Color del texto
                 font=("Arial", 14, "italic"))
         
-def apply_entry_styless(style):
+def apply_Entry_styles(style):
             style.configure("TEntry",
 
                 foreground="brown",      # Color del texto
@@ -42,7 +42,7 @@ def apply_entry_styless(style):
                 padding=5,               # Espaciado dentro del campo
                 relief="raised")      
             
-def apply_button_styless(style):
+def apply_Button_styles(style):
             style.configure("TButton", background="green2",
                         foreground="deep pink",
                         font=("Helvetica", 12, "bold"),  # Fuente y tamaño de texto
