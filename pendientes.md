@@ -1,10 +1,9 @@
 # Sin asignar
 
-* Cuando se selecciona un producto, pero no se escribe un número, al dar clic en agregar carrito ocurre un value error
+
 
 # Working on
 
-* Por arreglar: Si el cliente pone un número mayor al que hay en stock, todavía puede agregar el producto al carrito.
 
 
 # Terminados
@@ -21,6 +20,8 @@
 * (Lindsey) Por arreglar: como dijiste, el total de la factura hay que corregirlo
 * (Lindsey) Por mejorar: (esto se me acaba de ocurrir) al ver el sales history creo que también habría que agregar el total de la compra
 * (Lindsey) Por agregar: Al imprimir el recibo al comprar, arreglar el formato de los precios para que tengan "$" al comienzo.
+* (Lindsey) Cuando se selecciona un producto, pero no se escribe un número, al dar clic en agregar carrito ocurre un value error
+* (Santiago) Por arreglar: Si el cliente pone un número mayor al que hay en stock, todavía puede agregar el producto al carrito.
 
 
 
