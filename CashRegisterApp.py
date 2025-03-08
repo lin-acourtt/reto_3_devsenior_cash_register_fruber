@@ -4,7 +4,8 @@ from tkinter import messagebox
 from tkinter.constants import DISABLED, NORMAL 
 from operations import centerWindow, updateSelectedProductLabel, is_valid_number
 from exceptions import InvalidNumberInput, InvalidNumberInputHandler, NoProductSelectedError, InsuficientStockError, InsufficientStockErrorHandler
-from styles import apply_Treeview_styles, apply_Label_styles, apply_Frame_styles, apply_Entry_styles, apply_Button_styles
+from styles import apply_Treeview_styles, apply_Label_styles, apply_Frame_styles, apply_Entry_styles, apply_Button_styles, title_Styles
+
 
 
 ### Obtain product ID from selecction on TreeViewList
@@ -51,6 +52,11 @@ class CashRegisterApp():
 
         centerWindow(self.cashRegisterAppMainWindow,window_width,window_height)
         self.cashRegisterAppMainWindow.resizable(False,False)
+        
+        #create Title
+        titleStyle = title_Styles()
+        self.labelTitle = ttk.Label(self.cashRegisterAppMainWindow, text="Fruber", **titleStyle)
+        self.labelTitle.pack(pady=10)
 
         # Create Label
         self.labelSelectProductTitle = ttk.Label(self.cashRegisterAppMainWindow,text="Please select a product to shop: ")
@@ -142,7 +148,10 @@ class CashRegisterApp():
         
     def exitApplication(self):
         # Close the main window
-        self.cashRegisterAppMainWindow.destroy() 
+        
+        result = messagebox.askyesno("Confirm Exit", "Are you sure you want to exit?")
+        if result:
+            self.cashRegisterAppMainWindow.destroy() 
 
     def addItemToShoppingCart(self):
         

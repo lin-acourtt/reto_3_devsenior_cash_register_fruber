@@ -1,6 +1,27 @@
 import tkinter as tk
 from tkinter import ttk
 
+def title_Styles():
+    return {
+        # 'font': ("Arial", 16, "bold"),
+        # 'foreground': "white",
+        # 'background': "#4C4eee",
+        # 'borderwidth': 15,
+        # 'relief': "solid",
+        # 'padding': 10
+        
+        'font': ("Segoe UI", 13, "bold"),  # Fuente más moderna y grande
+        'foreground': "gold",  # Color de texto blanco para un buen contraste
+        'background': "#1aa1aa",  # Fondo azul
+        'borderwidth': 40,  # Borde más delgado para un aspecto más limpio
+        'relief': "raised",  # Borde elevado para un efecto 3D
+        'padding': 10,  # Espaciado mayor para que se vea más aireado
+        'anchor': 'center',  # Centra el texto en el widget
+        
+        
+        
+    }
+
 
 def apply_Treeview_styles(style):
     # style = ttk.Style()
