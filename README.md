@@ -24,9 +24,11 @@ El main es nuestro archivo principar donde vamos a ejecutar toda la interfaz gra
 
 
  ### librerias y modulos usados
- import tkinter
+``` 
+import tkinter
 from tkinter import ttk
 from tkinter import messagebox
+```
 
 ### Versión de Python
 
