@@ -21,6 +21,9 @@ El main es nuestro archivo principar donde vamos a ejecutar toda la interfaz gra
  En products guardamos nuestros productos disponibles en una lista con su nombre, precio y stock
  En estyles guardamos todos los estilos que le vamos a dar a nuestra interfaz grafica. 
 
+ ** contamos con 3 ventanas que vamos a poder apreciar en nuestra interfaz, la primera es la ventana principal donde vamos a poder elegir un producto del fruber y digitar la cantiad que queremos de ese producto, En el boton de add item to shoping cart vamos a poder agregar el producto al carrito, entonces al dar click en el boton de view shopping cart se nos desplegara la siguiete ventana que nos mostrara los productos que van seleccionados,el precio y dos botones, uno para comprar ese producto y otro para cancelar.
+  Al dar click en el otro boton de view sales history se nos abrira la tercer ventana que nos mostrara el historial de ventas. Por ultimo al dar click en el boton de exit nos va a mostrar un mensaje para confirmar que queremos salir y cerrara nuestra aplicacion de fruber.   
+
 
 
  ### librerias y modulos usados
