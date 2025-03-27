@@ -75,16 +75,16 @@ La aplicación consta de tres ventanas. La primera es la ventana principal donde
 
 Hay dos botones principales más, "View shopping cart" y "View sales history". Cada uno abre dos nuevas ventanas. 
 
-![](mainwindow.png)
+![](imgs/mainwindow.png)
 
 Al dar click en el boton de "View shopping cart" se despliega la siguiete ventana. Esta muestra los productos que han sido agregado al carrito de compras, y el total de ellos. Hay dos botones más, uno para comprar los productos en el carrito de compras, y el otro para cancelar la compra.
 
-![](shoppingcartwindow.png)
-![](purchasecompletewindow.png)
+![](imgs/shoppingcartwindow.png)
+![](imgs/purchasecompletewindow.png)
 
 El botón de "View sales history"  abrirá la tercera ventana que mostrará el historial de ventas. 
 
-![](saleshistorywindow.png)
+![](imgs/saleshistorywindow.png)
 
 Por ultimo, al dar click en el botón "Exit", se mostrará un mensaje para confirmar que queremos salir y se cerrará nuestra aplicacion de Fruber.   
 
@@ -102,6 +102,7 @@ Desarrollado en Python 3.13.0.
 
 ### Vídeo complementario
 
-[![](thumbnail.png)](https://youtu.be/20fCRJm-HXM)
+Dar clic a la imagen para ser redirigdo al vídeo en Youtube.
+[![](imgs/thumbnail.png)](https://youtu.be/20fCRJm-HXM)
 
 
